@@ -19,6 +19,12 @@ const readJSON = (f, fb) => {
 const writeJSON = (f, obj) => fs.writeFileSync(f, JSON.stringify(obj, null, 2), 'utf8');
 
 const state = readJSON(STATE, { session: Date.now().toString(36), started_at: null, records: [] });
+// 给历史记录补 id（老版本写的数据没有 id，删除功能需要）
+state.seq = state.seq || 0;
+for (const r of state.records) {
+  if (!r.id) r.id = ++state.seq;
+}
+state.seq = Math.max(state.seq, ...state.records.map(r => r.id || 0), 0);
 
 function send(res, code, body, type = 'application/json; charset=utf-8') {
   res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store' });
@@ -73,13 +79,27 @@ const server = http.createServer(async (req, res) => {
       const data = JSON.parse((await body(req)) || '{}');
       if (!data.text) return send(res, 400, JSON.stringify({ error: 'empty' }));
       if (!state.started_at) state.started_at = new Date().toISOString();
+      const id = ++state.seq;
       state.records.push({
+        id,
         text: String(data.text).slice(0, 120),
         para: Number(data.para) || 0,
         page: Number(data.page) || 0,
         block: Number(data.block) || 0,
         at: new Date().toISOString(),
       });
+      writeJSON(STATE, state);
+      return send(res, 200, JSON.stringify({ ok: true, id, count: state.records.length }));
+    }
+
+    // 删掉一条选错的记录
+    if (req.method === 'POST' && url.pathname === '/api/delete') {
+      const { id } = JSON.parse((await body(req)) || '{}');
+      const before = state.records.length;
+      state.records = state.records.filter(r => String(r.id) !== String(id));
+      if (state.records.length === before) {
+        return send(res, 404, JSON.stringify({ error: 'not found' }));
+      }
       writeJSON(STATE, state);
       return send(res, 200, JSON.stringify({ ok: true, count: state.records.length }));
     }

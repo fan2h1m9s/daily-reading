@@ -48,10 +48,17 @@
   aside h3 { margin: 0 0 10px; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
   #log { list-style: none; margin: 0; padding: 0; }
   #log li {
-    padding: 6px 8px; margin-bottom: 5px; background: #fff; border: 1px solid var(--line);
-    border-radius: 7px; word-break: break-word; animation: pop .18s ease-out;
+    padding: 6px 22px 6px 8px; margin-bottom: 5px; background: #fff; border: 1px solid var(--line);
+    border-radius: 7px; word-break: break-word; animation: pop .18s ease-out; position: relative;
   }
   #log li span { display: block; color: #a9a299; font-size: 10.5px; margin-top: 2px; }
+  #log li .del {
+    position: absolute; top: 3px; right: 3px; width: 17px; height: 17px; padding: 0;
+    border: 0; border-radius: 4px; background: transparent; color: #c9c2b7;
+    font: 13px/1 system-ui, sans-serif; cursor: pointer; opacity: 0; transition: .12s;
+  }
+  #log li:hover .del { opacity: 1; }
+  #log li .del:hover { color: var(--accent); background: #f6efe8; }
   @keyframes pop { from { transform: translateY(-3px); opacity: 0 } }
   #empty { color: #b3ada3; line-height: 1.6; }
 
@@ -166,7 +173,12 @@ async function boot() {
   const st = await (await fetch('/api/state')).json();
   $('#count').textContent = st.records.length;
   if (st.records.length) $('#count').classList.add('on');
-  st.records.slice().reverse().forEach(r => addLog(r.text, r.para, r.page));
+  st.records.slice().reverse().forEach(r => addLog(r));
+  // 恢复已记录段落的高亮（刷新/重新打开后不再丢失）
+  st.records.forEach(r => {
+    const el = document.querySelector(`[data-block="${r.block}"]`);
+    if (el && el.classList.contains('blk')) el.classList.add('on');
+  });
   if (st.started_at) t0 = Date.parse(st.started_at);
   else t0 = Date.now();
 }
@@ -208,6 +220,7 @@ async function capture() {
   };
   if (host && host.classList.contains('blk')) host.classList.add('on');
 
+  let id = null;
   try {
     const r = await fetch('/api/record', {
       method: 'POST',
@@ -215,25 +228,65 @@ async function capture() {
       body: JSON.stringify(payload),
     });
     const d = await r.json();
+    id = d.id;
     $('#count').textContent = d.count;
     $('#count').classList.add('on');
   } catch (e) { /* 离线也别打断阅读 */ }
 
-  addLog(text, payload.para, payload.page);
+  addLog({ id, text, para: payload.para, page: payload.page, block: payload.block });
   toast('✓ ' + text);
 }
 
-function addLog(text, para, page) {
+function addLog(rec) {
   const empty = $('#empty');
   if (empty) empty.style.display = 'none';
   const li = document.createElement('li');
-  li.textContent = text;
+  li.dataset.id = rec.id ?? '';
+  li.dataset.block = rec.block ?? '';
+  li.appendChild(document.createTextNode(rec.text));
   const s = document.createElement('span');
-  s.textContent = 'P' + page + ' · 段 ' + para;
+  s.textContent = 'P' + rec.page + ' · 段 ' + rec.para;
   li.appendChild(s);
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'del';
+  del.title = '删掉这条（选错了）';
+  del.textContent = '×';
+  li.appendChild(del);
   const log = $('#log');
   log.insertBefore(li, log.firstChild);
 }
+
+// 删掉选错的生词
+$('#log').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.del');
+  if (!btn) return;
+  const li = btn.closest('li');
+  const block = li.dataset.block;
+  try {
+    const r = await fetch('/api/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: li.dataset.id }),
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    li.remove();
+    $('#count').textContent = d.count;
+    if (!d.count) {
+      $('#count').classList.remove('on');
+      $('#empty').style.display = 'block';
+    }
+    // 该段没有别的记录了，就把高亮去掉
+    if (block) {
+      const still = [...document.querySelectorAll('#log li')].some(x => x.dataset.block === block);
+      if (!still) {
+        const el = document.querySelector(`[data-block="${block}"]`);
+        if (el) el.classList.remove('on');
+      }
+    }
+  } catch (err) { /* 忽略 */ }
+});
 
 let toastTimer;
 function toast(msg) {
@@ -244,10 +297,17 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 1100);
 }
 
-document.addEventListener('mouseup', () => setTimeout(capture, 0));
-document.addEventListener('touchend', () => setTimeout(capture, 120));
-document.addEventListener('keyup', e => {
-  if (e.key === 'Shift' || e.key === 'ArrowUp' || e.key === 'ArrowDown') setTimeout(capture, 0);
+// 只有"在正文里按下鼠标"才可能是一次真划选，避免加载时的残留选区被误记
+let dragging = false;
+document.addEventListener('mousedown', (e) => {
+  dragging = !!(e.target.closest && e.target.closest('#article'));
+});
+document.addEventListener('mouseup', () => {
+  if (dragging) setTimeout(capture, 0);
+  dragging = false;
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'Shift' || e.shiftKey) setTimeout(capture, 0);
 });
 
 // ---- 结束 / 清空 ----

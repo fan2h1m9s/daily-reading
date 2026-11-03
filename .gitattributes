@@ -1,0 +1,11 @@
+# .bat 必须是 CRLF，否则 cmd 会报 "xxx 不是内部或外部命令"
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 其余统一 LF
+*.py   text eol=lf
+*.js   text eol=lf
+*.html text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
