@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Reading</title>
+<style>
+  :root { --fs: 19px; --bg: #faf8f4; --ink: #1c1b19; --muted: #8a857c; --line: #e6e1d8; --accent: #b4643c; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font-family: Charter, Georgia, "Iowan Old Style", "Songti SC", "SimSun", serif;
+    font-size: var(--fs); line-height: 1.85;
+    display: grid; grid-template-columns: 1fr 268px; min-height: 100vh;
+  }
+  ::selection { background: #ffe58a; }
+
+  header.top {
+    position: sticky; top: 0; z-index: 9; grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 14px;
+    padding: 9px 22px; background: rgba(250,248,244,.94);
+    border-bottom: 1px solid var(--line); backdrop-filter: blur(6px);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: var(--muted);
+  }
+  header.top b { color: var(--ink); font-weight: 600; }
+  header.top .sp { flex: 1; }
+  header.top button {
+    font: inherit; font-size: 12px; color: #6b665e; background: #fff;
+    border: 1px solid var(--line); border-radius: 7px; padding: 4px 9px; cursor: pointer;
+  }
+  header.top button:hover { border-color: #cfc7ba; color: var(--ink); }
+  .pill { padding: 3px 9px; border-radius: 99px; background: #f0ece4; font-variant-numeric: tabular-nums; }
+  #count.on { background: #fff0c9; color: #8a5a12; }
+
+  main { padding: 40px 34px 160px; max-width: 760px; width: 100%; margin: 0 auto; }
+  h1 { font-size: 1.55em; line-height: 1.3; margin: 0 0 .8em; letter-spacing: -.01em; }
+  h2 { font-size: 1.16em; line-height: 1.4; margin: 1.9em 0 .6em; }
+  p.blk { margin: 0 0 1.05em; text-align: justify; hyphens: auto; }
+  p.blk.on { background: linear-gradient(90deg, #fff6d6 0%, rgba(255,246,214,0) 92%); border-radius: 3px; }
+  .meta { font-family: system-ui, sans-serif; font-size: 12.5px; color: var(--muted); margin-bottom: 2.2em; }
+  .pnum { font-family: system-ui, sans-serif; font-size: 11px; color: #bdb6aa; margin: 2.4em 0 .4em; letter-spacing: .1em; }
+
+  aside {
+    border-left: 1px solid var(--line); padding: 18px 16px 120px;
+    position: sticky; top: 44px; height: calc(100vh - 44px); overflow-y: auto;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 12.5px;
+  }
+  aside h3 { margin: 0 0 10px; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  #log { list-style: none; margin: 0; padding: 0; }
+  #log li {
+    padding: 6px 8px; margin-bottom: 5px; background: #fff; border: 1px solid var(--line);
+    border-radius: 7px; word-break: break-word; animation: pop .18s ease-out;
+  }
+  #log li span { display: block; color: #a9a299; font-size: 10.5px; margin-top: 2px; }
+  @keyframes pop { from { transform: translateY(-3px); opacity: 0 } }
+  #empty { color: #b3ada3; line-height: 1.6; }
+
+  #toast {
+    position: fixed; right: 24px; bottom: 24px; z-index: 99;
+    background: #1c1b19; color: #fdfbf7; padding: 9px 15px; border-radius: 9px;
+    font-family: system-ui, sans-serif; font-size: 13px; opacity: 0; transform: translateY(8px);
+    transition: .18s; pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: none; }
+
+  #done {
+    position: fixed; inset: 0; background: rgba(28,27,25,.55); display: none;
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  #done.show { display: flex; }
+  #done .card {
+    background: #fff; border-radius: 14px; padding: 26px 30px; width: 330px;
+    font-family: system-ui, sans-serif; text-align: center;
+  }
+  #done h2 { margin: 0 0 6px; font-size: 17px; }
+  #done .big { font-size: 40px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  #done p { color: var(--muted); font-size: 13px; line-height: 1.7; }
+  #done button { margin-top: 14px; font: inherit; padding: 8px 18px; border-radius: 8px; border: 0; background: #1c1b19; color: #fff; cursor: pointer; }
+
+  @media (max-width: 900px) { body { grid-template-columns: 1fr } aside { display: none } main { padding: 26px 20px 120px } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <b id="ttl">Daily Reading</b>
+  <span id="meta"></span>
+  <span class="sp"></span>
+  <span class="pill">本次已记 <b id="count">0</b></span>
+  <span class="pill" id="timer">00:00</span>
+  <button id="fminus">A−</button>
+  <button id="fplus">A+</button>
+  <button id="reset">清空本次</button>
+  <button id="finish">结束本次</button>
+</header>
+
+<main id="article"></main>
+
+<aside>
+  <h3>本次生词</h3>
+  <ul id="log"></ul>
+  <div id="empty">用鼠标拖选生词即可，<br>自动记录，无需点击。</div>
+</aside>
+
+<div id="toast"></div>
+
+<div id="done">
+  <div class="card">
+    <h2>本次记录完成</h2>
+    <div class="big" id="dcount">0</div>
+    <p>个生词 · 用时 <span id="dmin">0</span> 分钟<br>已保存，可以对我说「分析一下」</p>
+    <button id="dclose">继续阅读</button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let article = null, lastText = '', lastAt = 0;
+
+// ---- 字号 ----
+const savedFs = localStorage.getItem('dr-fs');
+if (savedFs) document.documentElement.style.setProperty('--fs', savedFs + 'px');
+const bump = d => {
+  const cur = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fs')) || 19;
+  const next = Math.min(30, Math.max(14, cur + d));
+  document.documentElement.style.setProperty('--fs', next + 'px');
+  localStorage.setItem('dr-fs', next);
+};
+$('#fminus').onclick = () => bump(-1);
+$('#fplus').onclick = () => bump(1);
+
+// ---- 加载 ----
+async function boot() {
+  const r = await fetch('/api/article');
+  const data = await r.json();
+  if (!r.ok) {
+    $('#article').innerHTML = '<p class="blk">' + (data.error || '读取失败') + '</p>';
+    return;
+  }
+  article = data;
+  $('#ttl').textContent = 'Daily Reading';
+  $('#meta').textContent = (data.pages || '?') + ' 页 · 约 ' + (data.words || '?') + ' 词';
+
+  const main = $('#article');
+  let page = 0, para = 0;
+  data.blocks.forEach((b, i) => {
+    if (b.p !== page) {
+      page = b.p;
+      const d = document.createElement('div');
+      d.className = 'pnum';
+      d.textContent = 'P' + page;
+      main.appendChild(d);
+    }
+    const el = document.createElement(b.t === 'p' ? 'p' : b.t);
+    if (b.t === 'p') {
+      el.className = 'blk';
+      para++;
+      el.dataset.para = para;
+    }
+    el.dataset.block = i;
+    el.dataset.page = b.p;
+    el.textContent = b.s;
+    main.appendChild(el);
+  });
+
+  const st = await (await fetch('/api/state')).json();
+  $('#count').textContent = st.records.length;
+  if (st.records.length) $('#count').classList.add('on');
+  st.records.slice().reverse().forEach(r => addLog(r.text, r.para, r.page));
+  if (st.started_at) t0 = Date.parse(st.started_at);
+  else t0 = Date.now();
+}
+
+// ---- 计时 ----
+let t0 = Date.now();
+setInterval(() => {
+  const s = Math.floor((Date.now() - t0) / 1000);
+  const m = String(Math.floor(s / 60)).padStart(2, '0');
+  const ss = String(s % 60).padStart(2, '0');
+  const el = $('#timer');
+  if (el) el.textContent = m + ':' + ss;
+}, 1000);
+
+// ---- 划选捕获 ----
+function blockOf(node) {
+  while (node && node.nodeType !== 1) node = node.parentNode;
+  while (node && !(node.dataset && node.dataset.block)) node = node.parentNode;
+  return node;
+}
+
+async function capture() {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  const text = sel.toString().replace(/\s+/g, ' ').trim();
+  if (!text || text.length < 2 || text.length > 120) return;
+  if (!$('#article').contains(sel.anchorNode)) return;
+
+  const now = Date.now();
+  if (text === lastText && now - lastAt < 700) return;
+  lastText = text; lastAt = now;
+
+  const host = blockOf(sel.anchorNode);
+  const payload = {
+    text,
+    block: host ? +host.dataset.block : -1,
+    para: host ? +host.dataset.para : -1,
+    page: host ? +host.dataset.page : -1,
+  };
+  if (host && host.classList.contains('blk')) host.classList.add('on');
+
+  try {
+    const r = await fetch('/api/record', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    $('#count').textContent = d.count;
+    $('#count').classList.add('on');
+  } catch (e) { /* 离线也别打断阅读 */ }
+
+  addLog(text, payload.para, payload.page);
+  toast('✓ ' + text);
+}
+
+function addLog(text, para, page) {
+  const empty = $('#empty');
+  if (empty) empty.style.display = 'none';
+  const li = document.createElement('li');
+  li.textContent = text;
+  const s = document.createElement('span');
+  s.textContent = 'P' + page + ' · 段 ' + para;
+  li.appendChild(s);
+  const log = $('#log');
+  log.insertBefore(li, log.firstChild);
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg.length > 46 ? msg.slice(0, 46) + '…' : msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1100);
+}
+
+document.addEventListener('mouseup', () => setTimeout(capture, 0));
+document.addEventListener('touchend', () => setTimeout(capture, 120));
+document.addEventListener('keyup', e => {
+  if (e.key === 'Shift' || e.key === 'ArrowUp' || e.key === 'ArrowDown') setTimeout(capture, 0);
+});
+
+// ---- 结束 / 清空 ----
+$('#finish').onclick = async () => {
+  const r = await fetch('/api/finish', { method: 'POST' });
+  const d = await r.json();
+  $('#dcount').textContent = d.records;
+  $('#dmin').textContent = d.minutes;
+  $('#done').classList.add('show');
+};
+$('#dclose').onclick = () => $('#done').classList.remove('show');
+
+$('#reset').onclick = async () => {
+  if (!confirm('清空本次已记录的生词？')) return;
+  await fetch('/api/reset', { method: 'POST' });
+  $('#log').innerHTML = '';
+  $('#empty').style.display = 'block';
+  $('#count').textContent = '0';
+  $('#count').classList.remove('on');
+  document.querySelectorAll('.blk.on').forEach(el => el.classList.remove('on'));
+};
+
+boot();
+</script>
+</body>
+</html>

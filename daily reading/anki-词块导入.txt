@@ -1,0 +1,139 @@
+raise / cut interest rates	加息 / 降息
+a rate hike	一次加息
+monetary tightening	货币紧缩
+quantitative easing	量化宽松
+the central bank holds rates steady	央行维持利率不变
+a hawkish pause	鹰派式暂停
+inflation cools down	通胀降温
+consumer price index	消费者物价指数
+cost-of-living crisis	生活成本危机
+a soft landing	软着陆
+a market rally	市场上涨
+a selloff	抛售
+a bull market	牛市
+a bear market	熊市
+stocks tumbled	股价暴跌
+stocks surged	股价暴涨
+a sharp correction	大幅回调
+volatility	波动性
+valuation	估值
+a bubble	泡沫
+risk appetite	风险偏好
+investors fled to safety	投资者转向避险资产
+oil prices retreat	油价回落
+the index ended lower	指数收跌
+beat estimates	超出预期
+miss estimates	低于预期
+top revenue expectations	营收超预期
+blow past estimates	大幅超出预期
+revenue guidance	营收指引
+raise its outlook	上调业绩展望
+cut its outlook	下调业绩展望
+quarter-over-quarter	环比
+year-over-year	同比
+same-store sales	同店销售
+a profit warning	盈利预警
+a write-down	资产减记
+a one-off charge	一次性费用
+margins came under pressure	利润率承压
+lay off staff	裁员
+job cuts	裁员
+cost-cutting	削减成本
+a turnaround plan	扭亏计划
+merger and acquisition	并购
+a takeover bid	收购要约
+a hostile bid	敌意收购
+a share buyback	股票回购
+a dividend	股息
+spin off	分拆
+file for an IPO	申请上市
+default on debt	债务违约
+a credit crunch	信贷紧缩
+a liquidity crunch	流动性紧张
+regulatory scrutiny	监管审查
+an antitrust probe	反垄断调查
+a class-action lawsuit	集体诉讼
+reach a settlement	达成和解
+red tape	繁文缛节
+a loophole	漏洞
+a bailout	纾困 / 救助
+tariffs on imports	进口关税
+a trade deficit	贸易逆差
+supply chain disruption	供应链中断
+reshoring	制造业回流
+export controls	出口管制
+a stimulus package	刺激方案
+a supply crunch	供应紧张
+brace for	准备迎接
+roll out a feature	逐步推出功能
+in beta	内测阶段
+general availability	正式发布
+ship an update	推送更新
+sunset a product	下线产品
+a hands-on	上手体验
+a large language model	大语言模型
+training data	训练数据
+inference	推理
+fine-tune a model	微调模型
+state-of-the-art	最先进水平
+a benchmark	基准测试
+hallucinate	（模型）产生幻觉
+guardrails	护栏 / 限制措施
+compute	算力
+a data center buildout	数据中心建设
+a semiconductor	半导体
+chip fabrication	芯片制造
+a process node	制程节点
+user growth	用户增长
+engagement	用户参与度
+churn	用户流失率
+monetization	变现
+an ad-supported tier	广告支持档
+unit economics	单位经济模型
+burn rate	烧钱速度
+runway	资金可撑时间
+gross margin	毛利率
+a data breach	数据泄露
+an outage	服务中断
+patch a vulnerability	修补漏洞
+an exploit	漏洞利用
+ransomware	勒索软件
+a zero-day	零日漏洞
+end-to-end encryption	端到端加密
+a heist	（网络）盗窃案
+a gatekeeper	守门人（平台）
+content moderation	内容审核
+age verification	年龄验证
+data scraping	数据抓取
+tout	吹捧 / 标榜
+slash	大幅削减
+hike	上调
+curb	遏制
+vow	承诺
+clamp down on	严厉打击
+a crackdown on	对…的打击行动
+weigh	权衡 / 考虑
+signal	释放信号
+backtrack	反悔 / 改口
+stall	停滞
+unveil	公布 / 揭晓
+shelve	搁置
+scrap	取消 / 废弃
+in the wake of	在…之后（多指负面事件后）
+amid	在…背景下
+at stake	事关重大
+on the brink of	濒临
+a backlash	反弹 / 抵制
+an outcry	强烈抗议
+a wake-up call	警钟
+a milestone	里程碑
+a setback	挫折
+a turning point	转折点
+fall short of	未达到
+come under pressure	承压
+gain traction	开始见效 / 获得支持
+gain steam	势头增强
+take a toll on	对…造成损害
+in a bid to	为了
+pave the way for	为…铺路
+a red flag	危险信号
